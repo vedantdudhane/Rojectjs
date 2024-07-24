@@ -43,14 +43,14 @@ const taskModal = document.querySelector(".task_modal_body")
     // Template for the card on the screen
     
     const htmltaskContent =({id, title, type, description, url}) => `
-    <div class ='col-md-6 col-lg-4 mt-3' id =${id}>
+    <div class ='col-md-6 col-lg-4 mt-3' id =${id} key=${id}>
     <div class='card shadow-sm task__card'>
         <div class='card-header d-flex justify-content-end task__card__header'>
             <button type="button" class="btn btn-outline-primary mr-1" name=${id}>
-                <i class="fa-solid fa-pencil"></i>
+                <i class="fa-solid fa-pencil name=${id}"></i>
             </button>
             <button type="button" class="btn btn-outline-danger mr-1" name=${id} onclick='deleteTask.apply(this,arguments)'>
-                <i class="fa-solid fa-trash"></i>
+                <i class="fa-solid fa-trash name=${id}"></i>
             </button>
         </div>
 
@@ -138,6 +138,16 @@ console.log.apply("corect")
 };
 const deleteTask = (e) => {
 //   if (!e) e = window.event;
-
- 
+const targetId = e.target.getAttribute("name");
+const type = e.target.tagName;
+const deleteTask= state.taskList.filter(({id})=> id!==targetId);
+updateLocalStorage();
+ if(type==="BUTTON"){
+    return e.target.parentNode.parentNode.parentNode.parentNode.removeChild(
+        e.target.parentNode.parentNode.parentNode
+    );
+ }  
+ return e.target.parentNode.parentNode.parentNode.parentNode.parentNode.removeChild(
+        e.target.parentNode.parentNode.parentNode.parentNode
+    );
 };
