@@ -57,7 +57,7 @@ const taskModal = document.querySelector(".task_modal_body")
         <div class='card-body'>
         ${
             url 
-           ? `<img src= ${url} width='100%' class='card-img-top md-3 rounded-lg' />`
+           ? `<img src= ${url} width='100%' alt='card-image' class='card-img-top md-3 rounded-lg' />`
            :  `<img src="https://tse1.mm.bing.net/th?id=OIP.F00dCf4bXxX0J-qEEf4qIQHaD6&pid=Api&rs=1&c=1&qlt=95&w=208&h=109" width='100%' class='card-img-top md-3 rounded-lg' />`
         }
         <h4 class='card-title d-flex justify-content-start task__card__title'>${title}</h4>
@@ -79,10 +79,10 @@ const taskModal = document.querySelector(".task_modal_body")
      const htmlModalContent =({id, title, url, description}) =>{
         const date = new Date(parseInt(id))
         return `
-        <div id=${id}
+        <div id=${id}>
           ${
             url 
-           ? `<img src= ${url} width='100%' class='card-img-top md-3 rounded-lg' />`
+           ? `<img src= ${url} width='100%' alt='card-image' class='card-img-top md-3 rounded-lg' />`
            :  `<img src="https://tse1.mm.bing.net/th?id=OIP.F00dCf4bXxX0J-qEEf4qIQHaD6&pid=Api&rs=1&c=1&qlt=95&w=208&h=109" width='100%' class='card-img-top md-3 rounded-lg' />`
         }
         <strong class='text-muted text-sm'>Created on: ${date.toDateString()}</strong>
@@ -130,14 +130,14 @@ const taskModal = document.querySelector(".task_modal_body")
     };
     // open task
    const openTask = (e) => {
-//   if (!e) e = window.event;
+   if (!e) e = window.event;
 
   const getTask = state.taskList.find(({ id }) => id === e.target.id);
   taskModal.innerHTML = htmlModalContent(getTask);
-console.log.apply("corect")
+
 };
 const deleteTask = (e) => {
-//   if (!e) e = window.event;
+  if (!e) e = window.event;
 const targetId = e.target.getAttribute("name");
 const type = e.target.tagName;
 const deleteTask= state.taskList.filter(({id})=> id!==targetId);
@@ -150,4 +150,95 @@ updateLocalStorage();
  return e.target.parentNode.parentNode.parentNode.parentNode.parentNode.removeChild(
         e.target.parentNode.parentNode.parentNode.parentNode
     );
+};
+
+// edit task
+const editTask=(e)=>{
+      if (!e) e = window.event;
+
+    const targetId=e.target.id;
+    const type=e.target.tagName;
+    let parentNode;
+    let taskTitle;
+    let taskDescription;
+    let taskType;
+    let submitButton;
+
+    if(type==="BUTTON"){
+        parentNode=e.target.parentNode.parentNode;
+    }else{
+        parentNode=e.target.parentNode.parentNode.parentNode;
+    }
+    
+  taskTitle = parentNode.childNodes[3].childNodes[3];
+  taskDescription = parentNode.childNodes[3].childNodes[5];
+  taskType = parentNode.childNodes[3].childNodes[7].childNodes[1];
+  submitButton = parentNode.childNodes[5].childNodes[1];
+
+  taskTitle.setAttribute("contenteditable","true")
+  taskType.setAttribute("contenteditable","true")
+  taskDescription.setAttribute("contenteditable","true")
+
+  submitButton.setAttribute("onclick","saveEdit.apply(this, arguments)");
+  submitButton.removeAttribute( data-bs-toggle);
+  submitButton.removeAttribute( data-bs-target);
+  submitButton.innerHTML="Save Changes";
+
+
+};
+
+// save edit
+    const saveEdit=(e)=>{
+  if (!e) e = window.event;
+  const targetId=e.target.id;
+  const parentNode=e.target.parentNode.parentNode;
+
+  const taskTitle = parentNode.childNodes[3].childNodes[3];
+  const taskDescription = parentNode.childNodes[3].childNodes[5];
+  const taskType = parentNode.childNodes[3].childNodes[7].childNodes[1];
+  const submitButton = parentNode.childNodes[5].childNodes[1];
+
+  const updateData={
+    taskTitle: taskTitle.innerHTML,
+    taskType: taskType.innerHTML,
+    taskDescription:  taskDescription.innerHTML,
+
+  };
+  let stateCopy=state.taskList;
+  stateCopy=stateCopy.map((task)=>
+  task.id===targetId
+  ?{
+          id: task.id,
+          title: updateData.taskTitle,
+          description: updateData.taskDescription,
+          type: updateData.taskType,
+          url: task.url,
+  }
+  : task
+);
+state.taskList=stateCopy;
+updateLocalStorage();
+
+  taskTitle.setAttribute("contenteditable", "false");
+  taskDescription.setAttribute("contenteditable", "false");
+  taskType.setAttribute("contenteditable", "false");
+
+  submitButton.setAttribute("onclick", "openTask.apply(this, arguments)");
+    submitButton.setAttribute("data-bs-toggle", "modal");
+  submitButton.setAttribute("data-bs-target", "#staticBackdrop");
+  submitButton.innerHTML = "Open Task";
+};
+
+const searchTask =(e)=>{
+      if (!e) e = window.event;
+    while(taskContents.firstChild){
+        taskContents.removeChild(taskContents.firstChild );
+    }
+    const resultData= state.taskList.filter(({title})=>
+        title.toLowerCase().includes(e.target.value.toLowerCase())
+);
+console.log(resultData);
+resultData.map((CardData)=>
+taskContents.insertAdjacentHTML("beforeend",htmlModalContent(CardData))
+);
 };
